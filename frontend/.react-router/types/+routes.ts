@@ -28,12 +28,15 @@ type Pages = {
   "/verify-email": {
     params: {};
   };
+  "/dashboard": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/sign-in" | "/sign-up" | "/forgot-password" | "/reset-password" | "/verify-email";
+    page: "/" | "/sign-in" | "/sign-up" | "/forgot-password" | "/reset-password" | "/verify-email" | "/dashboard";
   };
   "routes/auth/auth-layout.tsx": {
     id: "routes/auth/auth-layout";
@@ -62,5 +65,13 @@ type RouteFiles = {
   "routes/auth/verify-email.tsx": {
     id: "routes/auth/verify-email";
     page: "/verify-email";
+  };
+  "routes/dashboard/dashboard-layout.tsx": {
+    id: "routes/dashboard/dashboard-layout";
+    page: "/dashboard";
+  };
+  "routes/dashboard/index.tsx": {
+    id: "routes/dashboard/index";
+    page: "/dashboard";
   };
 };

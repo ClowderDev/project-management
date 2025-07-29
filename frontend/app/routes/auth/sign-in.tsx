@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { signInSchema } from "~/lib/schema";
+import { signInSchema, type SignInSchemaType } from "~/lib/schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,11 +21,16 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { Link } from "react-router";
-
-type SignInSchemaType = z.infer<typeof signInSchema>;
+import { Link, useNavigate } from "react-router";
+import { useAuth } from "~/provider/auth-context";
+import { useLoginMutation } from "~/hooks/use-auth";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const SignIn = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
   const form = useForm<SignInSchemaType>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -34,8 +39,23 @@ const SignIn = () => {
     },
   });
 
-  const handleSubmit = (data: SignInSchemaType) => {
-    console.log("Form submitted with data:", data);
+  const { mutate, isPending } = useLoginMutation();
+
+  const handleSubmit = (values: SignInSchemaType) => {
+    mutate(values, {
+      onSuccess: (data) => {
+        login(data);
+        console.log(data);
+        toast.success("Login successful");
+        navigate("/dashboard");
+      },
+      onError: (error: any) => {
+        const errorMessage =
+          error.response?.data?.message || "An error occurred";
+        console.log(error);
+        toast.error(errorMessage);
+      },
+    });
   };
 
   return (
@@ -95,8 +115,12 @@ const SignIn = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
           </Form>

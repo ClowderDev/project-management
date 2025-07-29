@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { signUpSchema } from "~/lib/schema";
+import { signUpSchema, type SignUpSchemaType } from "~/lib/schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -24,8 +24,6 @@ import { Button } from "~/components/ui/button";
 import { Link, useNavigate } from "react-router";
 import { useSignUpMutation } from "~/hooks/use-auth";
 import { toast } from "sonner";
-
-export type SignUpSchemaType = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
   const navigate = useNavigate();
