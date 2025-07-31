@@ -20,7 +20,13 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { postData } from "~/lib/fetch-util";
-import type { SignUpSchemaType } from "~/lib/schema";
+import type {
+  ForgotPasswordSchemaType,
+  ResetPasswordSchemaType,
+  SignInSchemaType,
+  SignUpSchemaType,
+  VerifyEmailSchemaType,
+} from "~/lib/schema";
 
 export const useSignUpMutation = () => {
   return useMutation({
@@ -30,31 +36,27 @@ export const useSignUpMutation = () => {
 
 export const useVerifyEmailMutation = () => {
   return useMutation({
-    mutationFn: (data: { token: string }) =>
+    mutationFn: (data: VerifyEmailSchemaType) =>
       postData("/auth/verify-email", data),
   });
 };
 
 export const useLoginMutation = () => {
   return useMutation({
-    mutationFn: (data: { email: string; password: string }) =>
-      postData("/auth/login", data),
+    mutationFn: (data: SignInSchemaType) => postData("/auth/login", data),
   });
 };
 
 export const useForgotPasswordMutation = () => {
   return useMutation({
-    mutationFn: (data: { email: string }) =>
+    mutationFn: (data: ForgotPasswordSchemaType) =>
       postData("/auth/reset-password-request", data),
   });
 };
 
 export const useResetPasswordMutation = () => {
   return useMutation({
-    mutationFn: (data: {
-      token: string;
-      newPassword: string;
-      confirmPassword: string;
-    }) => postData("/auth/reset-password", data),
+    mutationFn: (data: ResetPasswordSchemaType) =>
+      postData("/auth/reset-password", data),
   });
 };

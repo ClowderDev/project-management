@@ -1,11 +1,20 @@
-import morgan from "morgan";
+import express, { NextFunction, Request, Response } from "express";
 import "dotenv/config";
 import cors from "cors";
-import express from "express";
 import { Env } from "./config/env.config";
 import routes from "./routes/index.route";
 import { errorHandler } from "./middleware/errorHandler.middleware";
 import connectDatabase from "./config/database.config";
+
+// Import all models to register schemas with Mongoose
+import "./models/user.model";
+import "./models/workspace.model";
+import "./models/project.model";
+import "./models/task.model";
+import "./models/comment.model";
+import "./models/activity.model";
+import "./models/verification.model";
+import "./models/workspace-invite.model";
 
 const app = express();
 
@@ -21,8 +30,6 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use(morgan("dev"));
 
 app.use("/api/v1", routes);
 

@@ -31,12 +31,20 @@ type Pages = {
   "/dashboard": {
     params: {};
   };
+  "/workspaces": {
+    params: {};
+  };
+  "/workspaces/:workspaceId": {
+    params: {
+      "workspaceId": string;
+    };
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/sign-in" | "/sign-up" | "/forgot-password" | "/reset-password" | "/verify-email" | "/dashboard";
+    page: "/" | "/sign-in" | "/sign-up" | "/forgot-password" | "/reset-password" | "/verify-email" | "/dashboard" | "/workspaces" | "/workspaces/:workspaceId";
   };
   "routes/auth/auth-layout.tsx": {
     id: "routes/auth/auth-layout";
@@ -68,10 +76,18 @@ type RouteFiles = {
   };
   "routes/dashboard/dashboard-layout.tsx": {
     id: "routes/dashboard/dashboard-layout";
-    page: "/dashboard";
+    page: "/dashboard" | "/workspaces" | "/workspaces/:workspaceId";
   };
   "routes/dashboard/index.tsx": {
     id: "routes/dashboard/index";
     page: "/dashboard";
+  };
+  "routes/dashboard/workspaces/index.tsx": {
+    id: "routes/dashboard/workspaces/index";
+    page: "/workspaces";
+  };
+  "routes/dashboard/workspaces/workspace-details.tsx": {
+    id: "routes/dashboard/workspaces/workspace-details";
+    page: "/workspaces/:workspaceId";
   };
 };
