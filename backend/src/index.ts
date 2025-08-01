@@ -64,6 +64,16 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Add a simple test route to verify the server is working
+app.get("/", (req, res) => {
+  res.json({ message: "Project Management API is running", timestamp: new Date().toISOString() });
+});
+
+// Add a test route to verify /api/v1 is working
+app.get("/api/v1", (req, res) => {
+  res.json({ message: "API v1 is working", timestamp: new Date().toISOString() });
+});
+
 app.use("/api/v1", routes);
 
 app.use(errorHandler);
