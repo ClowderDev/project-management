@@ -30,7 +30,11 @@ import type {
 
 export const useSignUpMutation = () => {
   return useMutation({
-    mutationFn: (data: SignUpSchemaType) => postData("/auth/register", data),
+    mutationFn: (data: SignUpSchemaType) => {
+      // Remove confirmPassword before sending to backend
+      const { confirmPassword, ...registerData } = data;
+      return postData("/auth/register", registerData);
+    },
   });
 };
 
