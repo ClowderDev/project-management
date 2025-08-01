@@ -40,7 +40,9 @@ const DashboardLayout = () => {
 
         <main className="flex-1 overflow-y-auto h-full w-full">
           <div className="mx-auto container px-2 sm:px-6 lg:px-8 py-0 md:py-8 w-full h-full">
-            <Outlet />
+            <Outlet
+              context={{ onWorkspaceSelected: handleWorkspaceSelected }}
+            />
           </div>
         </main>
       </div>

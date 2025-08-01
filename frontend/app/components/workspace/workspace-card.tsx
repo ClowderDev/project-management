@@ -11,9 +11,23 @@ import { format } from "date-fns";
 import { Users } from "lucide-react";
 import type { Workspace } from "~/types";
 
-export const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
+interface WorkspaceCardProps {
+  workspace: Workspace;
+  onWorkspaceSelected?: (workspace: Workspace) => void;
+}
+
+export const WorkspaceCard = ({
+  workspace,
+  onWorkspaceSelected,
+}: WorkspaceCardProps) => {
+  const handleClick = () => {
+    if (onWorkspaceSelected) {
+      onWorkspaceSelected(workspace);
+    }
+  };
+
   return (
-    <Link to={`/workspaces/${workspace._id}`}>
+    <Link to={`/workspaces/${workspace._id}`} onClick={handleClick}>
       <Card className="transition-all hover:shadow-md hover:-translate-y-1">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { Types } from "mongoose";
 import { asyncHandler } from "../middleware/asyncHandler.middlerware";
 import { workspaceSchema } from "../validation/workspace.validator";
 import { HTTPSTATUS } from "../config/http.config";
@@ -7,6 +8,7 @@ import {
   getAllWorkspacesService,
   getWorkspaceByIdService,
   getWorkspaceProjectsService,
+  getWorkspaceStatsService,
 } from "../services/workspace.service";
 
 export const createWorkspaceController = asyncHandler(
@@ -107,6 +109,37 @@ export const getWorkspaceProjectsController = asyncHandler(
         workspace,
         projects,
       },
+    });
+  }
+);
+
+export const getWorkspaceStatsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { workspaceId } = req.params;
+
+    if (!workspaceId || workspaceId === "null" || workspaceId === "undefined") {
+      return res.status(HTTPSTATUS.BAD_REQUEST).json({
+        message: "Valid workspace ID is required",
+      });
+    }
+
+    if (!Types.ObjectId.isValid(workspaceId)) {
+      return res.status(HTTPSTATUS.BAD_REQUEST).json({
+        message: "Invalid workspace ID format",
+      });
+    }
+
+    if (!req.user) {
+      return res.status(HTTPSTATUS.UNAUTHORIZED).json({
+        message: "User not authenticated",
+      });
+    }
+
+    const stats = await getWorkspaceStatsService(workspaceId, req.user.id);
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: "Workspace statistics retrieved successfully",
+      data: stats,
     });
   }
 );

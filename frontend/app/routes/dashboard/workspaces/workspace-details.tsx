@@ -1,14 +1,19 @@
 import { Loader } from "lucide-react";
-import { useState } from "react";
-import { useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { useOutletContext, useParams } from "react-router";
 import { CreateProjectDialog } from "~/components/project/create-project";
 import { ProjectList } from "~/components/workspace/project-list";
 import { WorkspaceHeader } from "~/components/workspace/workspace-header";
 import { useGetWorkspaceQuery } from "~/hooks/use-workspace";
 import type { Project, Workspace } from "~/types";
 
+interface OutletContext {
+  onWorkspaceSelected: (workspace: Workspace) => void;
+}
+
 const WorkspaceDetails = () => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
+  const { onWorkspaceSelected } = useOutletContext<OutletContext>();
   const [isCreateProject, setIsCreateProject] = useState(false);
   const [isInviteMember, setIsInviteMember] = useState(false);
 
@@ -24,6 +29,13 @@ const WorkspaceDetails = () => {
     isLoading: boolean;
     error: any;
   };
+
+  // Automatically set the current workspace when the page loads
+  useEffect(() => {
+    if (data?.workspace && onWorkspaceSelected) {
+      onWorkspaceSelected(data.workspace);
+    }
+  }, [data?.workspace, onWorkspaceSelected]);
 
   if (isLoading) {
     return (

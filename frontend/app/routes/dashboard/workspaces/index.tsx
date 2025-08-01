@@ -1,6 +1,6 @@
 import { Loader, PlusCircle, Users } from "lucide-react";
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useOutletContext } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -17,8 +17,13 @@ import { format } from "date-fns";
 import { NoDataFound } from "~/components/no-data-found";
 import { WorkspaceCard } from "~/components/workspace/workspace-card";
 
+interface OutletContext {
+  onWorkspaceSelected: (workspace: Workspace) => void;
+}
+
 const Workspaces = () => {
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
+  const { onWorkspaceSelected } = useOutletContext<OutletContext>();
   const { data: workspacesResponse, isLoading } = useGetWorkspacesQuery() as {
     data: { data: Workspace[] };
     isLoading: boolean;
@@ -43,7 +48,11 @@ const Workspaces = () => {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {workspaces.map((ws) => (
-            <WorkspaceCard key={ws._id} workspace={ws} />
+            <WorkspaceCard
+              key={ws._id}
+              workspace={ws}
+              onWorkspaceSelected={onWorkspaceSelected}
+            />
           ))}
 
           {workspaces.length === 0 && (

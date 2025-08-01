@@ -15,7 +15,7 @@ const AuthLayout = () => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/workspaces" />;
   }
 
   return (
