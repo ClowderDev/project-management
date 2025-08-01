@@ -21,7 +21,7 @@
 import axios from "axios";
 
 const BACKEND_URL =
-  import.meta.env.BACKEND_URL || "http://localhost:5000/api/v1";
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api/v1";
 
 const api = axios.create({
   baseURL: BACKEND_URL,
