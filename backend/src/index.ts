@@ -30,7 +30,9 @@ app.use(
       const allowedOrigins = [
         Env.FRONTEND_URL,
         "https://project-management-clowder.vercel.app",
+        "https://project-management-clowder.vercel.app/", // with trailing slash
         "https://project-management-kuoxxo3hg-clowderline-3066s-projects.vercel.app",
+        "https://project-management-8gnig4vu5-clowderline-3066s-projects.vercel.app",
         "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost:4173",
@@ -39,16 +41,22 @@ app.use(
       // Check if the origin is in the allowed list or matches Vercel preview URLs
       const isAllowed =
         allowedOrigins.includes(origin) ||
+        allowedOrigins.includes(origin + "/") || // Try with trailing slash
+        allowedOrigins.includes(origin.replace(/\/$/, "")) || // Try without trailing slash
         (origin.includes("project-management") &&
-          origin.includes("vercel.app"));
+          origin.includes("vercel.app")) ||
+        (origin.includes("clowderline") && origin.includes("vercel.app"));
+
+      console.log(`CORS check for origin: ${origin}, allowed: ${isAllowed}`);
 
       if (isAllowed) {
         callback(null, true);
       } else {
+        console.log(`CORS blocked origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
