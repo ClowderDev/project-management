@@ -76,3 +76,6 @@ export const commentSchema = new Schema<CommentDocument>(
   },
   { timestamps: true }
 );
+
+const CommentModel = mongoose.model<CommentDocument>("Comment", commentSchema);
+export default CommentModel;

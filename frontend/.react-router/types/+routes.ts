@@ -39,12 +39,25 @@ type Pages = {
       "workspaceId": string;
     };
   };
+  "/workspaces/:workspaceId/projects/:projectId": {
+    params: {
+      "workspaceId": string;
+      "projectId": string;
+    };
+  };
+  "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId": {
+    params: {
+      "workspaceId": string;
+      "projectId": string;
+      "taskId": string;
+    };
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/sign-in" | "/sign-up" | "/forgot-password" | "/reset-password" | "/verify-email" | "/dashboard" | "/workspaces" | "/workspaces/:workspaceId";
+    page: "/" | "/sign-in" | "/sign-up" | "/forgot-password" | "/reset-password" | "/verify-email" | "/dashboard" | "/workspaces" | "/workspaces/:workspaceId" | "/workspaces/:workspaceId/projects/:projectId" | "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId";
   };
   "routes/auth/auth-layout.tsx": {
     id: "routes/auth/auth-layout";
@@ -76,7 +89,7 @@ type RouteFiles = {
   };
   "routes/dashboard/dashboard-layout.tsx": {
     id: "routes/dashboard/dashboard-layout";
-    page: "/dashboard" | "/workspaces" | "/workspaces/:workspaceId";
+    page: "/dashboard" | "/workspaces" | "/workspaces/:workspaceId" | "/workspaces/:workspaceId/projects/:projectId" | "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId";
   };
   "routes/dashboard/index.tsx": {
     id: "routes/dashboard/index";
@@ -89,5 +102,13 @@ type RouteFiles = {
   "routes/dashboard/workspaces/workspace-details.tsx": {
     id: "routes/dashboard/workspaces/workspace-details";
     page: "/workspaces/:workspaceId";
+  };
+  "routes/dashboard/project/project-details.tsx": {
+    id: "routes/dashboard/project/project-details";
+    page: "/workspaces/:workspaceId/projects/:projectId";
+  };
+  "routes/dashboard/task/task-details.tsx": {
+    id: "routes/dashboard/task/task-details";
+    page: "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId";
   };
 };

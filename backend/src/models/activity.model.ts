@@ -35,6 +35,9 @@ export const activitySchema = new Schema<ActivityDocument>(
         "joined_workspace",
         "transferred_workspace_ownership",
         "added_attachment",
+        "added_subtask",
+        "watched_task",
+        "archived_task",
       ],
     },
     resourceType: {
