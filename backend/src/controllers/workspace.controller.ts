@@ -1,14 +1,20 @@
 import type { Request, Response } from "express";
 import { Types } from "mongoose";
 import { asyncHandler } from "../middleware/asyncHandler.middlerware";
-import { workspaceSchema } from "../validation/workspace.validator";
+import {
+  workspaceSchema,
+  inviteMemberSchema,
+} from "../validation/workspace.validator";
 import { HTTPSTATUS } from "../config/http.config";
 import {
+  acceptInviteByTokenService,
+  acceptWorkspaceInviteService,
   createWorkspaceService,
   getAllWorkspacesService,
   getWorkspaceByIdService,
   getWorkspaceProjectsService,
   getWorkspaceStatsService,
+  inviteUserToWorkspaceService,
 } from "../services/workspace.service";
 
 export const createWorkspaceController = asyncHandler(
@@ -140,6 +146,85 @@ export const getWorkspaceStatsController = asyncHandler(
     return res.status(HTTPSTATUS.OK).json({
       message: "Workspace statistics retrieved successfully",
       data: stats,
+    });
+  }
+);
+
+export const inviteUserToWorkspaceController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { workspaceId } = req.params;
+    const { email, role } = inviteMemberSchema.parse(req.body);
+
+    if (!req.user) {
+      return res.status(HTTPSTATUS.UNAUTHORIZED).json({
+        message: "User not authenticated",
+      });
+    }
+
+    if (!Types.ObjectId.isValid(workspaceId)) {
+      return res.status(HTTPSTATUS.BAD_REQUEST).json({
+        message: "Invalid workspace ID format",
+      });
+    }
+
+    const result = await inviteUserToWorkspaceService(
+      workspaceId,
+      email,
+      role,
+      req.user._id.toString()
+    );
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: `Invitation sent to ${email} for workspace ${workspaceId}`,
+      data: result,
+    });
+  }
+);
+
+export const acceptGenerateInviteController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { workspaceId } = req.params;
+
+    if (!req.user) {
+      return res.status(HTTPSTATUS.UNAUTHORIZED).json({
+        message: "User not authenticated",
+      });
+    }
+
+    if (!Types.ObjectId.isValid(workspaceId)) {
+      return res.status(HTTPSTATUS.BAD_REQUEST).json({
+        message: "Invalid workspace ID format",
+      });
+    }
+
+    const result = await acceptWorkspaceInviteService(
+      workspaceId,
+      req.user._id.toString()
+    );
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: "Invite token generated successfully",
+    });
+  }
+);
+
+export const acceptInviteByTokenController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { token } = req.body;
+
+    if (!req.user) {
+      return res.status(HTTPSTATUS.UNAUTHORIZED).json({
+        message: "User not authenticated",
+      });
+    }
+
+    const result = await acceptInviteByTokenService(
+      token,
+      req.user._id.toString()
+    );
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: "Invite accepted successfully",
     });
   }
 );

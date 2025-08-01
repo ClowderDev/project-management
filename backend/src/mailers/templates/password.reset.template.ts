@@ -1,8 +1,10 @@
+import { Env } from "../../config/env.config";
+
 export const getResetPasswordEmailTemplate = (
   username: string,
   resetPasswordToken: string
 ) => {
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetPasswordToken}`;
+  const resetLink = `${Env.FRONTEND_URL}/reset-password?token=${resetPasswordToken}`;
   const currentYear = new Date().getFullYear();
 
   const html = `

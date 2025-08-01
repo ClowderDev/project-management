@@ -49,11 +49,15 @@ export const registerService = async (body: RegisterSchemaType) => {
       });
 
       try {
-        await sendVerificationEmail({
+        console.log(
+          `Attempting to send verification email to: ${newUser.email}`
+        );
+        const emailResult = await sendVerificationEmail({
           email: newUser.email,
           username: newUser.name,
           verificationToken: verificationToken,
         });
+        console.log("Verification email sent successfully:", emailResult);
       } catch (error) {
         console.error("Failed to send verification email:", error);
         throw new BadRequestException("Failed to send verification email");

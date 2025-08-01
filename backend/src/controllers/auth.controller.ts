@@ -18,6 +18,7 @@ import {
   verifyEmailService,
 } from "../services/auth.service";
 import { Env } from "../config/env.config";
+import { sendVerificationEmail } from "../mailers/email.mailer";
 
 export const registerController = asyncHandler(
   async (req: Request, res: Response) => {

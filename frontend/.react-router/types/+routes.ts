@@ -52,12 +52,26 @@ type Pages = {
       "taskId": string;
     };
   };
+  "/my-tasks": {
+    params: {};
+  };
+  "/members": {
+    params: {};
+  };
+  "/workspace-invite/:workspaceId": {
+    params: {
+      "workspaceId": string;
+    };
+  };
+  "/user/profile": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/sign-in" | "/sign-up" | "/forgot-password" | "/reset-password" | "/verify-email" | "/dashboard" | "/workspaces" | "/workspaces/:workspaceId" | "/workspaces/:workspaceId/projects/:projectId" | "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId";
+    page: "/" | "/sign-in" | "/sign-up" | "/forgot-password" | "/reset-password" | "/verify-email" | "/dashboard" | "/workspaces" | "/workspaces/:workspaceId" | "/workspaces/:workspaceId/projects/:projectId" | "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId" | "/my-tasks" | "/members" | "/workspace-invite/:workspaceId" | "/user/profile";
   };
   "routes/auth/auth-layout.tsx": {
     id: "routes/auth/auth-layout";
@@ -89,7 +103,7 @@ type RouteFiles = {
   };
   "routes/dashboard/dashboard-layout.tsx": {
     id: "routes/dashboard/dashboard-layout";
-    page: "/dashboard" | "/workspaces" | "/workspaces/:workspaceId" | "/workspaces/:workspaceId/projects/:projectId" | "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId";
+    page: "/dashboard" | "/workspaces" | "/workspaces/:workspaceId" | "/workspaces/:workspaceId/projects/:projectId" | "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId" | "/my-tasks" | "/members";
   };
   "routes/dashboard/index.tsx": {
     id: "routes/dashboard/index";
@@ -110,5 +124,25 @@ type RouteFiles = {
   "routes/dashboard/task/task-details.tsx": {
     id: "routes/dashboard/task/task-details";
     page: "/workspaces/:workspaceId/projects/:projectId/tasks/:taskId";
+  };
+  "routes/dashboard/my-tasks.tsx": {
+    id: "routes/dashboard/my-tasks";
+    page: "/my-tasks";
+  };
+  "routes/dashboard/members.tsx": {
+    id: "routes/dashboard/members";
+    page: "/members";
+  };
+  "routes/dashboard/workspaces/workspace-invite.tsx": {
+    id: "routes/dashboard/workspaces/workspace-invite";
+    page: "/workspace-invite/:workspaceId";
+  };
+  "routes/user/user-layout.tsx": {
+    id: "routes/user/user-layout";
+    page: "/user/profile";
+  };
+  "routes/user/profile.tsx": {
+    id: "routes/user/profile";
+    page: "/user/profile";
   };
 };

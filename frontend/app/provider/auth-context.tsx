@@ -19,7 +19,13 @@
 ===============================================================================
 */
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import type { User } from "~/types";
 import { queryClient } from "./react-query-provider";
 import { useLocation, useNavigate } from "react-router";
@@ -31,6 +37,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (data: any) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,12 +122,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     queryClient.clear();
   };
 
+  const updateUser = useCallback(
+    (userData: Partial<User>) => {
+      if (user) {
+        const updatedUser = { ...user, ...userData };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+    },
+    [user]
+  );
+
   const values = {
     user,
     isAuthenticated,
     isLoading,
     login,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>;

@@ -18,11 +18,19 @@ export const sendEmail = async ({
   text,
   html,
 }: Params) => {
-  return await resend.emails.send({
-    from,
-    to: Array.isArray(to) ? to : [to],
-    text,
-    subject,
-    html,
-  });
+  try {
+    console.log(`Sending email to: ${to}, from: ${from}, subject: ${subject}`);
+    const result = await resend.emails.send({
+      from,
+      to: Array.isArray(to) ? to : [to],
+      text,
+      subject,
+      html,
+    });
+    console.log("Email sent successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
 };

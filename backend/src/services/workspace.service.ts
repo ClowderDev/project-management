@@ -1,8 +1,19 @@
+import jwt from "jsonwebtoken";
+import { acceptInviteByTokenController } from "./../controllers/workspace.controller";
 import ProjectModel from "../models/project.model";
 import WorkspaceModel from "../models/workspace.model";
 import { taskSchemaType } from "../models/task.model";
 import { ProjectDocument } from "../models/project.model";
 import { Types } from "mongoose";
+import UserModel from "../models/user.model";
+import WorkspaceInviteModel from "../models/workspace-invite.model";
+import { signJwtToken } from "../utils/jwt";
+import { Env } from "../config/env.config";
+import { sendWorkspaceInviteEmail } from "../mailers/email.mailer";
+import { recordActivity } from "../utils/lib";
+import { AppError } from "../utils/app-error";
+import { HTTPSTATUS } from "../config/http.config";
+import { ErrorCodeEnum } from "../enums/error-code.enum";
 
 // Extended task type with timestamps
 interface ExtendedTaskType extends taskSchemaType {
@@ -261,5 +272,269 @@ export const getWorkspaceStatsService = async (
     workspaceProductivityData,
     upcomingTasks,
     recentProjects: populatedProjects.slice(0, 5),
+  };
+};
+
+export const inviteUserToWorkspaceService = async (
+  workspaceId: string,
+  email: string,
+  role: string,
+  userId: string
+) => {
+  const workspace = await WorkspaceModel.findById(workspaceId);
+
+  if (!workspace) {
+    throw new AppError(
+      "Workspace not found",
+      HTTPSTATUS.NOT_FOUND,
+      ErrorCodeEnum.RESOURCE_NOT_FOUND
+    );
+  }
+
+  const userMemberInfo = workspace.members.find(
+    (member) => member.user.toString() === userId
+  );
+
+  if (!userMemberInfo || !["admin", "owner"].includes(userMemberInfo.role)) {
+    throw new AppError(
+      "You are not authorized to invite members to this workspace",
+      HTTPSTATUS.FORBIDDEN,
+      ErrorCodeEnum.ACCESS_UNAUTHORIZED
+    );
+  }
+
+  const existingUser = await UserModel.findOne({ email });
+
+  if (!existingUser) {
+    throw new AppError(
+      "User with this email does not exist",
+      HTTPSTATUS.NOT_FOUND,
+      ErrorCodeEnum.RESOURCE_NOT_FOUND
+    );
+  }
+
+  const isMember = workspace.members.some(
+    (member) => member.user.toString() === existingUser._id?.toString()
+  );
+
+  if (isMember) {
+    throw new AppError(
+      "User is already a member of this workspace",
+      HTTPSTATUS.CONFLICT,
+      ErrorCodeEnum.VALIDATION_ERROR
+    );
+  }
+
+  const isInvited = await WorkspaceInviteModel.findOne({
+    workspaceId: workspaceId,
+    user: existingUser._id,
+  });
+
+  if (isInvited && isInvited.expiresAt > new Date()) {
+    throw new AppError(
+      "User is already invited to this workspace",
+      HTTPSTATUS.CONFLICT,
+      ErrorCodeEnum.VALIDATION_ERROR
+    );
+  }
+
+  if (isInvited && isInvited.expiresAt < new Date()) {
+    await WorkspaceInviteModel.deleteOne({ _id: isInvited._id });
+  }
+
+  // Get the inviter user details
+  const inviterUser = await UserModel.findById(userId);
+
+  if (!inviterUser) {
+    throw new AppError(
+      "Inviter user not found",
+      HTTPSTATUS.NOT_FOUND,
+      ErrorCodeEnum.RESOURCE_NOT_FOUND
+    );
+  }
+
+  const { token: inviteToken } = signJwtToken(
+    {
+      userId: existingUser.id,
+    },
+    {
+      secret: Env.JWT_SECRET,
+      expiresIn: "7d",
+      audience: ["invite-member"],
+    }
+  );
+
+  await WorkspaceInviteModel.create({
+    user: existingUser._id,
+    workspaceId: workspaceId,
+    token: inviteToken,
+    role: role || "member",
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
+  try {
+    const emailResult = await sendWorkspaceInviteEmail({
+      email: existingUser.email,
+      inviteeName: existingUser.name,
+      inviterName: inviterUser.name,
+      workspaceName: workspace.name,
+      inviteToken: inviteToken,
+    });
+  } catch (emailError) {
+    console.error("Failed to send invite email:", emailError);
+    // Don't throw here - the invite was created successfully
+    // Just log the email error
+  }
+
+  return {
+    message: "User invited successfully",
+    inviteToken,
+  };
+};
+
+export const acceptWorkspaceInviteService = async (
+  workspaceId: string,
+  userId: string
+) => {
+  // Check if there's a specific invitation for this user and workspace
+  const inviteInfo = await WorkspaceInviteModel.findOne({
+    user: userId,
+    workspaceId: workspaceId,
+  });
+
+  const workspace = await WorkspaceModel.findById(workspaceId);
+
+  if (!workspace) {
+    throw new AppError(
+      "Workspace not found",
+      HTTPSTATUS.NOT_FOUND,
+      ErrorCodeEnum.RESOURCE_NOT_FOUND
+    );
+  }
+
+  const isMember = workspace.members.some(
+    (member) => member.user.toString() === userId
+  );
+
+  if (isMember) {
+    // Clean up invitation if user is already a member
+    if (inviteInfo) {
+      await WorkspaceInviteModel.deleteOne({ _id: inviteInfo._id });
+    }
+    throw new AppError(
+      "User is already a member of this workspace",
+      HTTPSTATUS.BAD_REQUEST,
+      ErrorCodeEnum.VALIDATION_ERROR
+    );
+  }
+
+  let userRole: "owner" | "member" | "admin" | "viewer" = "member"; // Default role for link-based invitations
+
+  // If there's a specific invitation, validate and use its role
+  if (inviteInfo) {
+    if (inviteInfo.expiresAt < new Date()) {
+      // Clean up expired invitation
+      await WorkspaceInviteModel.deleteOne({ _id: inviteInfo._id });
+      throw new AppError(
+        "Invitation has expired",
+        HTTPSTATUS.BAD_REQUEST,
+        ErrorCodeEnum.VALIDATION_ERROR
+      );
+    }
+    // Map invite role to workspace role (invite doesn't have "owner" role)
+    userRole = (inviteInfo.role as "member" | "admin" | "viewer") || "member";
+  }
+
+  // Add user to workspace
+  workspace.members.push({
+    user: new Types.ObjectId(userId),
+    role: userRole,
+    joinedAt: new Date(),
+  });
+
+  await workspace.save();
+
+  // Record activity
+  await recordActivity(userId, "joined_workspace", "Workspace", workspaceId, {
+    description: `Joined ${workspace.name} workspace`,
+  });
+
+  // Clean up the invitation after successful acceptance (if it exists)
+  if (inviteInfo) {
+    await WorkspaceInviteModel.deleteOne({ _id: inviteInfo._id });
+  }
+
+  return {
+    message: "Workspace invite accepted successfully",
+    workspaceId: workspace._id,
+  };
+};
+
+export const acceptInviteByTokenService = async (
+  token: string,
+  userId: string
+) => {
+  const decodedToken = jwt.verify(token, Env.JWT_SECRET, {
+    audience: "invite-member",
+  }) as jwt.JwtPayload & { userId: string };
+
+  const { userId: tokenUserId } = decodedToken;
+
+  // Verify that the token was issued for the current user
+  if (tokenUserId !== userId) {
+    throw new Error("Invalid token for this user");
+  }
+
+  // Find the invite information using the token
+  const inviteInfo = await WorkspaceInviteModel.findOne({
+    user: userId,
+    token: token,
+  });
+
+  if (!inviteInfo) {
+    throw new Error("Invite not found or expired");
+  }
+
+  if (inviteInfo.expiresAt < new Date()) {
+    throw new Error("Invite token has expired");
+  }
+
+  const workspace = await WorkspaceModel.findById(inviteInfo.workspaceId);
+
+  if (!workspace) {
+    throw new Error("Workspace not found");
+  }
+
+  const isMember = workspace.members.some(
+    (member) => member.user.toString() === userId
+  );
+
+  if (isMember) {
+    throw new Error("User is already a member of this workspace");
+  }
+
+  workspace.members.push({
+    user: new Types.ObjectId(userId),
+    role: inviteInfo.role || "member",
+    joinedAt: new Date(),
+  });
+
+  await workspace.save();
+
+  await Promise.all([
+    WorkspaceInviteModel.deleteOne({ _id: inviteInfo._id }),
+    recordActivity(
+      userId,
+      "joined_workspace",
+      "Workspace",
+      inviteInfo.workspaceId.toString(),
+      {
+        description: `Joined ${workspace.name} workspace`,
+      }
+    ),
+  ]);
+
+  return {
+    message: "Workspace invite accepted successfully",
   };
 };

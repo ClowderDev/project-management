@@ -318,7 +318,10 @@ export const useAchievedTaskMutation = () => {
 export const useGetMyTasksQuery = () => {
   return useQuery({
     queryKey: ["my-tasks", "user"],
-    queryFn: () => fetchData("/tasks/my-tasks"),
+    queryFn: async () => {
+      const response = await fetchData<{ tasks: any[] }>("/tasks/my-tasks");
+      return response.tasks;
+    },
   });
 };
 

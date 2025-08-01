@@ -1,8 +1,10 @@
+import { Env } from "../../config/env.config";
+
 export const getVerificationEmailTemplate = (
   username: string,
   verificationToken: string
 ) => {
-  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+  const verificationLink = `${Env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
   const currentYear = new Date().getFullYear();
 
   const html = `
