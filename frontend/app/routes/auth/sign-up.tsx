@@ -61,6 +61,24 @@ const SignUp = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
+      <Card className="max-w-md w-full mb-4 border-orange-200 bg-orange-50">
+        <CardContent className="pt-6">
+          <div className="text-center space-y-3">
+            <h3 className="font-semibold text-orange-800">Free Tier Notice</h3>
+            <p className="text-sm text-orange-700">
+              Due to Resend service policies, free tier can only use one email.
+              So for your experience through this page, please use this account:
+            </p>
+            <div className="bg-white p-3 rounded-md border border-orange-200">
+              <p className="text-sm font-mono">
+                <strong>Email:</strong> clowderline@gmail.com
+                <br />
+                <strong>Password:</strong> 123456789
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <CardTitle>Create an account</CardTitle>
